@@ -1,1 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Agricultural Buffer Strip Recommender</title>
+  <style>
+    body {
+      font-family: Roboto, sans-serif;
+      margin: 40px;
+      background: #f4f8f7;
+      color: #333;
+    }
+    h2 {
+      color: #2a6d4f;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+    select {
+      margin-top: 5px;
+      padding: 8px;
+      width: 250px;
+    }
+    .btn {
+      margin-top: 15px;
+      padding: 8px 16px;
+      width: 250px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+      border-radius: 4px;
+    }
+    .btn-primary {
+      background-color: #2a6d4f;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #3c8b67;
+    }
+    .btn-secondary {
+      background-color: #ccc;
+      color: #333;
+    }
+    .btn-secondary:hover {
+      background-color: #bbb;
+    }
+    #output {
+      margin-top: 20px;
+      background: #e0f3e5;
+      padding: 15px;
+      border-radius: 8px;
+      width: fit-content;
+      max-width: 800px;
+    }
+    .input-info {
+      font-size: 0.9em;
+      color: #555;
+      margin: 5px 0 10px 0;
+      max-width: 600px;
+    }
+    .plant-desc {
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Agricultural Buffer Strip Recommender</h2>
+
+  <div style="overflow: auto; max-width: 800px;">
+    <div style="float: right; margin-left: 20px; margin-bottom: 10px; text-align: center;">
+      <img 
+        src="Willowtree.jpg" 
+        alt="Willow tree (Salix spp.)" 
+        width="400"
+        style="display: block; margin-bottom: 5px;">
+      <p style="font-size: 0.8em; color: #666; margin: 0;">
+        <i>Salix spp.</i> — Source: 
+        <a href="https://gardenerspath.com/plants/landscape-trees/best-willow-varieties" target="_blank" rel="noopener noreferrer">
+          Gardeners Path
+        </a>
+      </p>
+    </div>
+
+    <!-- Form Inputs -->
+    <label for="slope">Field Slope:</label>
+    <p class="input-info">
+      The slope of a field influences how water and nutrients move across the land...
+    </p>
+    <select id="slope">
+      <option value="lt10">&lt; 10 %</option>
+      <option value="gt10">&gt; 10 %</option>
+    </select>
+
+    <label for="fertilizer">Fertilizer Use:</label>
+    <p class="input-info">Fertilizer use affects nutrient runoff...</p>
+    <select id="fertilizer">
+      <option>Low</option>
+      <option>Moderate</option>
+      <option>High</option>
+    </select>
+
+    <label for="soil">Soil Type:</label>
+    <p class="input-info">Soil type influences water infiltration...</p>
+    <select id="soil">
+      <option>Clay</option>
+      <option>Sand</option>
+      <option>Loam</option>
+    </select>
+
+    <label for="rain">Annual Precipitation:</label>
+    <p class="input-info">Annual precipitation affects runoff and erosion risk...</p>
+    <select id="rain">
+      <option value="Dry">Dry (0–699 mm/year)</option>
+      <option value="Moderate">Moderate (700–1499 mm/year)</option>
+      <option value="Heavy">Heavy (&gt;1500 mm/year)</option>
+    </select>
+
+    <label for="distance">Distance to Water Body:</label>
+    <p class="input-info">Proximity to water bodies affects risk of pollution...</p>
+    <select id="distance">
+      <option value="lt10">&lt; 10 m</option>
+      <option value="10-30">10 – 30 m</option>
+      <option value="gt30">&gt; 30 m</option>
+    </select>
+
+    <button class="btn btn-primary" onclick="recommendBuffer()">Get Recommendation</button>
+    <button class="btn btn-secondary" onclick="resetForm()">Reset</button>
+
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const plantDescriptions = {
+      "Salix spp.": `
+        <div class="plant-desc">
+          <strong>Salix spp. (Willow):</strong>
+          <p>Fast-growing shrubs or trees found in moist environments. Extensive roots make them ideal for soil stabilization, erosion control, and nutrient uptake in riparian buffers.</p>
+        </div>`,
+
+      "Sambucus nigra, Viburnum opulus, Ulmus laevis, Alnus glutinosa, Carex riparia, Juncus effusus, Filipendula ulmaria, Lythrum salicaria": `
+        <div class="plant-desc">
+          <strong>Mixed Riparian Buffer Plants:</strong>
+          <p>Includes elderberry, guelder rose, white elm, alder, sedges, rushes, and flowering perennials. These species provide strong soil stabilization, nutrient filtering, and habitat diversity in moist to wet zones near water bodies.</p>
+        </div>`,
+
+      "Sambucus nigra, Quercus robur, Festuca pratensis, Lotus corniculatus, Achillea millefolium, Plantago lanceolata": `
+        <div class="plant-desc">
+          <strong>Diverse Buffer Vegetation:</strong>
+          <p>Combines woody plants like elder and oak with herbaceous species such as meadow fescue, trefoil, yarrow, and ribwort. Suitable for loamy soils and supports biodiversity, nitrogen fixation, and erosion control.</p>
+        </div>`,
+
+      "Festuca ovina, Anthyllis vulneraria, Bromus erectus, Poa angustifolia": `
+        <div class="plant-desc">
+          <strong>Dry-Site Grass Mix:</strong>
+          <p>Drought-tolerant grasses and legumes adapted to dry, sloped, or nutrient-poor conditions. Ideal for upper field areas with minimal water access.</p>
+        </div>`,
+
+      "Mixed native grasses and legumes": `
+        <div class="plant-desc">
+          <strong>General Purpose Buffer:</strong>
+          <p>Suitable for a wide range of conditions. Native grass-legume mixtures improve infiltration, support wildlife, and help trap sediment and nutrients.</p>
+        </div>`
+    };
+
+    function resetForm() {
+      document.getElementById("slope").selectedIndex = 0;
+      document.getElementById("fertilizer").selectedIndex = 0;
+      document.getElementById("soil").selectedIndex = 0;
+      document.getElementById("rain").selectedIndex = 0;
+      document.getElementById("distance").selectedIndex = 0;
+      document.getElementById("output").innerHTML = "";
+    }
+
+    function recommendBuffer() {
+      const slope = document.getElementById("slope").value;
+      const fertilizer = document.getElementById("fertilizer").value;
+      const soil = document.getElementById("soil").value;
+      const rain = document.getElementById("rain").value;
+      const distance = document.getElementById("distance").value;
+
+      let width = "";
+      let vegetationKey = "";
+
+      if (slope === "lt10") {
+        width = fertilizer === "Low" ? "3 meters" :
+                fertilizer === "Moderate" ? "5 meters" : "10 meters";
+      } else {
+        width = rain === "Dry" ? "5 meters" :
+                rain === "Moderate" ? "10 meters" : "12 meters";
+      }
+
+      if (distance === "lt10") {
+        vegetationKey = slope === "gt10"
+          ? "Salix spp."
+          : "Sambucus nigra, Viburnum opulus, Ulmus laevis, Alnus glutinosa, Carex riparia, Juncus effusus, Filipendula ulmaria, Lythrum salicaria";
+      } else if (distance === "10-30" && soil === "Loam") {
+        vegetationKey = "Sambucus nigra, Quercus robur, Festuca pratensis, Lotus corniculatus, Achillea millefolium, Plantago lanceolata";
+      } else if (distance === "gt30" && (slope === "gt10" || rain === "Dry")) {
+        vegetationKey = "Festuca ovina, Anthyllis vulneraria, Bromus erectus, Poa angustifolia";
+      } else {
+        vegetationKey = "Mixed native grasses and legumes";
+      }
+
+      const vegetationHTML = plantDescriptions[vegetationKey] || "";
+
+      document.getElementById("output").innerHTML = `
+        <p><strong>Recommended Buffer Width:</strong> ${width}</p>
+        <p><strong>Recommended Vegetation:</strong> ${vegetationKey}</p>
+        ${vegetationHTML}
+      `;
+    }
+  </script>
+</body>
+</html>
 
